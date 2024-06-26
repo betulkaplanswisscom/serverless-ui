@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Upload</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin-top: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      input[type='file'] {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Upload Image in Base64</h1>
+      <input type="file" id="imageInput" accept="image/*" />
+      <button onclick="uploadImage()">Upload Image</button>
+    </div>
+
+    <script>
+      function uploadImage() {
+        const input = document.getElementById('imageInput')
+        if (input.files && input.files[0]) {
+          const file = input.files[0]
+          const reader = new FileReader()
+
+          reader.onload = function (e) {
+            const imageData = e.target.result
+            const base64Image = imageData.replace(
+              /^data:image\/(png|jpg|jpeg);base64,/,
+              '',
+            )
+
+            // Encode the file name to safely include it in the URL
+            const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, '')
+            const encodedFileName = encodeURIComponent(fileNameWithoutExtension)
+
+            // const url = `https://m4phlpceh3.execute-api.eu-central-1.amazonaws.com/Prod/core?name=YOUAREWORKING2`
+            const url = `https://m4phlpceh3.execute-api.eu-central-1.amazonaws.com/Prod/core?name=${encodedFileName}`
+            fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(base64Image),
+            })
+              .then(response => response.json())
+              .then(data => {
+                console.log('Success:', data)
+              })
+              .catch(error => {
+                console.log('Error:', error)
+              })
+          }
+
+          reader.readAsDataURL(file)
+        }
+      }
+    </script>
+  </body>
+</html>
