@@ -130,7 +130,7 @@
             })
             .then(data => {
               clearInterval(interval) // Stop polling when data is ready
-              responseArea.innerText = 'Response: ' + JSON.stringify(data.data)
+              responseArea.innerText = data.data
             })
             .catch(error => {
               console.log('Polling error:', error)
