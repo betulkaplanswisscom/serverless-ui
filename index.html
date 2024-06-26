@@ -32,20 +32,39 @@
         margin-top: 10px;
         cursor: pointer;
         border-radius: 5px;
+        disabled: true; /* By default, the button should be disabled */
       }
       button:hover {
         background-color: #0056b3;
       }
+      button:disabled {
+        background-color: #ccc;
+        cursor: default;
+      }
       input[type='file'] {
         margin-top: 20px;
+      }
+      .loading {
+        display: block;
+        margin-top: 20px;
+        font-size: 16px;
+        color: #007bff;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>Upload Image in Base64</h1>
-      <input type="file" id="imageInput" accept="image/*" />
-      <button onclick="uploadImage()">Upload Image</button>
+      <input
+        type="file"
+        id="imageInput"
+        accept="image/*"
+        onchange="checkFileSelected()"
+      />
+      <button id="uploadButton" onclick="uploadImage()" disabled>
+        Upload Image
+      </button>
+      <div id="responseArea" class="loading"></div>
     </div>
 
     <script>
@@ -61,13 +80,10 @@
               /^data:image\/(png|jpg|jpeg);base64,/,
               '',
             )
-
-            // Encode the file name to safely include it in the URL
             const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, '')
             const encodedFileName = encodeURIComponent(fileNameWithoutExtension)
-
-            // const url = `https://m4phlpceh3.execute-api.eu-central-1.amazonaws.com/Prod/core?name=YOUAREWORKING2`
             const url = `https://m4phlpceh3.execute-api.eu-central-1.amazonaws.com/Prod/core?name=${encodedFileName}`
+
             fetch(url, {
               method: 'POST',
               headers: {
@@ -78,6 +94,7 @@
               .then(response => response.json())
               .then(data => {
                 console.log('Success:', data)
+                pollResponse(encodedFileName) // Start polling for the response
               })
               .catch(error => {
                 console.log('Error:', error)
@@ -86,6 +103,34 @@
 
           reader.readAsDataURL(file)
         }
+      }
+
+      function checkFileSelected() {
+        const input = document.getElementById('imageInput')
+        const uploadButton = document.getElementById('uploadButton')
+        uploadButton.disabled = !input.files.length // Enable button only if a file is selected
+      }
+
+      function pollResponse(fileName) {
+        const responseArea = document.getElementById('responseArea')
+        responseArea.innerText = 'Loading...' // Show loading text
+
+        const pollUrl = `https://m4phlpceh3.execute-api.eu-central-1.amazonaws.com/Prod/status?name=${fileName}`
+
+        const interval = setInterval(() => {
+          fetch(pollUrl)
+            .then(response => response.json())
+            .then(data => {
+              if (data.status === 'ready') {
+                clearInterval(interval)
+                responseArea.innerText = 'Response: ' + JSON.stringify(data)
+              }
+            })
+            .catch(error => {
+              console.log('Polling error:', error)
+              responseArea.innerText = 'Error in fetching response.'
+            })
+        }, 3000) // Poll every 3 seconds
       }
     </script>
   </body>
