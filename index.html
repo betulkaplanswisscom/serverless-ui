@@ -32,7 +32,6 @@
         margin-top: 10px;
         cursor: pointer;
         border-radius: 5px;
-        disabled: true; /* By default, the button should be disabled */
       }
       button:hover {
         background-color: #0056b3;
@@ -119,16 +118,24 @@
 
         const interval = setInterval(() => {
           fetch(pollUrl)
-            .then(response => response.json())
-            .then(data => {
-              if (data.status === 'ready') {
-                clearInterval(interval)
-                responseArea.innerText = 'Response: ' + JSON.stringify(data)
+            .then(response => {
+              if (response.ok) {
+                // Check if the response status is 200
+                const res = response.json()
+                console.log('response here', res)
+                return res
+              } else {
+                throw new Error('Server responded with an error!')
               }
+            })
+            .then(data => {
+              clearInterval(interval) // Stop polling when data is ready
+              responseArea.innerText = 'Response: ' + JSON.stringify(data.data)
             })
             .catch(error => {
               console.log('Polling error:', error)
               responseArea.innerText = 'Error in fetching response.'
+              clearInterval(interval) // Stop polling on error
             })
         }, 3000) // Poll every 3 seconds
       }
