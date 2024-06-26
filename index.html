@@ -115,7 +115,7 @@
         const responseArea = document.getElementById('responseArea')
         responseArea.innerText = 'Loading...' // Show loading text
 
-        const pollUrl = `https://m4phlpceh3.execute-api.eu-central-1.amazonaws.com/Prod/status?name=${fileName}`
+        const pollUrl = `https://m4phlpceh3.execute-api.eu-central-1.amazonaws.com/Prod/core?name=${fileName}_summary`
 
         const interval = setInterval(() => {
           fetch(pollUrl)
