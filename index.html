@@ -121,21 +121,26 @@
             .then(response => {
               if (response.ok) {
                 // Check if the response status is 200
-                const res = response.json()
-                console.log('response here', res)
-                return res
+                return response.json()
               } else {
-                throw new Error('Server responded with an error!')
+                // Log the response status if not 200
+                console.log(
+                  'Waiting for a successful response. Status:',
+                  response.status,
+                )
               }
             })
             .then(data => {
-              clearInterval(interval) // Stop polling when data is ready
-              responseArea.innerText = data.data
+              if (data) {
+                console.log(data)
+                clearInterval(interval) // Stop polling when data is ready
+                responseArea.innerText = data.data
+              }
             })
             .catch(error => {
               console.log('Polling error:', error)
+              clearInterval(interval) // Consider keeping the interval if you want to retry after an error
               responseArea.innerText = 'Error in fetching response.'
-              clearInterval(interval) // Stop polling on error
             })
         }, 3000) // Poll every 3 seconds
       }
